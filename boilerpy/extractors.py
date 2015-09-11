@@ -50,7 +50,7 @@ class Extractor(object):
 		return self.getDoc(self.readFromFile(filename))
 	
 	def getDocFromUrl(self,url):
-		return self.getDoc(self.readFromUrl(filename))
+		return self.getDoc(self.readFromUrl(url))
 
 	def getDoc(self,text):
 		doc=self.parseDoc(text)
@@ -85,13 +85,13 @@ class Extractor(object):
 		bpParser=parser.BoilerpipeHTMLParser()
 		try:
 			bpParser.feed(inputStr)
-		except:
+		except Exception as exc:
 			#in case of error, try again, first removing script tag content
 			bpParser=parser.BoilerpipeHTMLParser()
 			inputStr=re.sub(r'<(?:script|SCRIPT)[^>]*>.*?</(?:script|SCRIPT)>','<script></script>',inputStr,0,re.DOTALL)
 			try:
 				bpParser.feed(inputStr)
-			except:
+			except Exception as e:
 				print "Error parsing HTML : "+str(e)
 				return None
 		doc=bpParser.toTextDocument()

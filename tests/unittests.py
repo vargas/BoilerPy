@@ -1,5 +1,8 @@
 import unittest
 import sys
+
+import mock
+
 from boilerpy.document import TextDocument,TextBlock
 from boilerpy.filters import *
 from boilerpy.extractors import Extractor
@@ -18,7 +21,7 @@ def runOneTest():
 
 class TestFilters(unittest.TestCase):
 	defaultWords="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec fermentum tincidunt magna, eu pulvinar mauris dapibus pharetra. In varius, nisl a rutrum porta, sem sem semper lacus, et varius urna tellus vel lorem. Nullam urna eros, luctus eget blandit ac, imperdiet feugiat ipsum. Donec laoreet tristique mi a bibendum. Sed pretium bibendum scelerisque. Mauris id pellentesque turpis. Mauris porta adipiscing massa, quis tempus dui pharetra ac. Morbi lacus mauris, feugiat ac tempor ut, congue tincidunt risus. Pellentesque tincidunt adipiscing elit, in fringilla enim scelerisque vel. Nulla facilisi. ".split(' ')
-	
+
 	def makedoc(self,wordsArr,numAnchorWordsArr=None,isContentArr=None,labelArr=None):
 		textBlocks=[]
 		for idx,words in enumerate(wordsArr):
@@ -45,26 +48,26 @@ class TestFilters(unittest.TestCase):
 				else: block.addLabel(label)
 			except TypeError,IndexError:
 				pass
-				
+
 			textBlocks.append(block)
-		
+
 		return TextDocument(textBlocks)
-	
+
 	def verifyContent(self,filtr,doc,contentArr,show=False):
 		isContentBefore=[block.isContent() for block in doc.getTextBlocks()]
 		isChanged=filtr.process(doc)
 		isContent=[block.isContent() for block in doc.getTextBlocks()]
 		self.assertEqual(isContent,contentArr)
 		self.assertEqual(isChanged,isContent!=isContentBefore)
-		
+
 	def test_markEveryhingContent(self):
 		doc=self.makedoc([5,100,80],None,[False,True,False])
 		self.verifyContent(MarkEverythingContentFilter(),doc,[True,True,True])
-		
+
 	def test_inverted(self):
 		doc=self.makedoc([5,100,80],None,[False,True,False])
 		self.verifyContent(InvertedFilter(),doc,[True,False,True])
-		
+
 	def test_boilerplateBlock(self):
 		#keeps if isContent
 		doc=self.makedoc([5,100,10,50,80],None,[False,True,False,True,False])
@@ -76,7 +79,7 @@ class TestFilters(unittest.TestCase):
 		self.assertEqual(doc.getTextBlocks(),finalBlocks)
 		self.assertEqual(isContent,[True,True])
 		self.assertEqual(isChanged,True)
-		
+
 	def test_minWords(self):
 		#rejects if #words<k
 		doc=self.makedoc([10,50],None,[True,True])
@@ -131,7 +134,7 @@ class TestFilters(unittest.TestCase):
 	def test_contentFusion(self):
 		#join blocks with low link density
 		filtr=ContentFusion()
-		
+
 		#merge
 		doc=self.makedoc([10,10],[0,0],[True,False])
 		isChanged=filtr.process(doc)
@@ -158,7 +161,7 @@ class TestFilters(unittest.TestCase):
 
 	def test_labelFusion(self):
 		#fuse blocks with identical labels - ONLY LOOKS AT LABELS with markup prefix
-		
+
 		lb1=DefaultLabels.MARKUP_PREFIX+".title"
 		lb2=DefaultLabels.MARKUP_PREFIX+".menu"
 		doc=self.makedoc([10,10,10,10,10,10,10],None,None,[None,None,lb1,lb1,lb2,lb2,[lb1,lb2]])
@@ -211,7 +214,7 @@ class TestFilters(unittest.TestCase):
 		labels=[block.getLabels() for block in doc.getTextBlocks()]
 		self.assertEqual(labels,[set([lb1]),set([prefix+lb1,lb2]),set([prefix+lb2])])
 		self.assertEqual(isChanged,True)
-		
+
 	def test_documentTitleMatch(self):
 		#add title label to blocks matching sections of the title
 		doc=self.makedoc(["News","This is the real title","Red herring"])
@@ -262,12 +265,12 @@ class TestFilters(unittest.TestCase):
 		#accepts or rejects block based on machine-trained decision tree rules
 		#using features from previous, current and next block
 		filtr=NumWordsRulesClassifier()
-		
+
 		doc=self.makedoc([2,10,10],[0,0,0],[True,True,True])
 		isChanged=filtr.process(doc)
 		#test middle block only
 		self.assertEqual(doc.getTextBlocks()[1].isContent(),False)
-		
+
 		doc=self.makedoc([10,10,10],[0,0,0],[True,True,True])
 		isChanged=filtr.process(doc)
 		self.assertEqual(doc.getTextBlocks()[1].isContent(),True)
@@ -308,23 +311,23 @@ class TestParser(unittest.TestCase):
 		s+=templateArr[-1]
 		doc=self.extractor.parseDoc(s)
 		return doc
-	
+
 	def test_blocks(self):
 		template="<html><body><p>*</p><div>*<p>*</p>*</div></body></html>"
 		content=self.makecontent([4,5,6,7])
 		doc=self.makedoc(template,content)
-		
+
 		blocks=doc.getTextBlocks()
 		textArr=[block.getText() for block in blocks]
 		numWords=[block.getNumWords() for block in blocks]
 		self.assertEqual(textArr,content)
 		self.assertEqual(numWords,[4,5,6,7])
-	
+
 	def test_anchor(self):
 		template="<html><body><p>*</p><div>*<a href='half.html'>*</a></div><a href='full.html'><p>*</p></a></body></html>"
 		content=self.makecontent([6,"end with space ",3,6])
 		doc=self.makedoc(template,content)
-		
+
 		blocks=doc.getTextBlocks()
 		textArr=[block.getText() for block in blocks]
 		densityArr=[block.getLinkDensity() for block in blocks]
@@ -332,35 +335,35 @@ class TestParser(unittest.TestCase):
 		self.assertEqual(textArr,[content[0],content[1]+content[2],content[3]])
 		self.assertEqual(numAnchorWords,[0,3,6])
 		self.assertEqual(densityArr,[0.0,0.5,1.0])
-	
+
 	def test_title(self):
 		titleText="THIS IS TITLE"
 		s="<html><head><title>"+titleText+"</title></head><body><p>THIS IS CONTENT</p></body></html>"
 		doc=self.extractor.parseDoc(s)
 		self.assertEqual(doc.getTitle(),titleText)
-	
+
 	def test_body(self):
 		bodyText="THIS IS CONTENT"
 		s="<html><head><p>NOT IN BODY</p></head><body><p>"+bodyText+"</p></body></html>"
 		doc=self.extractor.parseDoc(s)
 		textArr=[block.getText() for block in doc.getTextBlocks()]
 		self.assertEqual(textArr,[bodyText])
-	
+
 	def test_inline(self):
 		template="<html><body><div><h1>*</h1><h4>*</h4></div><div><span>*</span><b>*</b></div></body></html>"
 		content=['AA','BB','CC','DD']
 		doc=self.makedoc(template,content)
-		
+
 		blocks=doc.getTextBlocks()
 		textArr=[block.getText() for block in blocks]
 		numWords=[block.getNumWords() for block in blocks]
 		self.assertEqual(textArr,[content[0],content[1],content[2]+content[3]])
-	
+
 	def test_ignorable(self):
 		template="<html><body><p>*</p><option><p>*</p></option></body></html>"
 		content=self.makecontent([10,12])
 		doc=self.makedoc(template,content)
-		
+
 		blocks=doc.getTextBlocks()
 		textArr=[block.getText() for block in blocks]
 		self.assertEqual(textArr,[content[0]])
@@ -372,36 +375,36 @@ class TestParser(unittest.TestCase):
 		template="<html><body><p>*</p><p>*</p></body></html>"
 		content=self.makecontent([80,"one, !!! two"])
 		doc=self.makedoc(template,content)
-		
+
 		blocks=doc.getTextBlocks()
 		numArr=[[block.getNumWords(),block.numWordsInWrappedLines,block.numWrappedLines,block.getTextDensity()] for block in blocks]
-		
+
 		#exact values are unknown, approximate value range to check
 		self.assertEqual(blocks[0].getNumWords(),80)
 		self.assertRange(blocks[0].numWordsInWrappedLines,60,80)
 		self.assertRange(blocks[0].numWrappedLines,4,7)
 		self.assertRange(blocks[0].getTextDensity(),8,16)
-		
+
 		self.assertEqual(numArr[1],[2,2,1,2])
-	
+
 	def test_blockIdxs(self):
 		template="<html><body><p>*  </p>  <p> * </p><p>*  </p><p>*  </p></body></html>"
 		content=self.makecontent([11,12,13,14])
 		doc=self.makedoc(template,content)
-		
+
 		blocks=doc.getTextBlocks()
 		idxArr=[[block.getOffsetBlocksStart(),block.getOffsetBlocksEnd()] for block in blocks]
 		self.assertEqual(idxArr,[[0,0],[1,1],[2,2],[3,3]])
-	
+
 	def test_tagLevel(self):
 		template="<html><body><div><p><span><a href='x.html'>*</a></span></p>*</div></body></html>"
 		content=self.makecontent([5,6])
 		doc=self.makedoc(template,content)
-		
+
 		blocks=doc.getTextBlocks()
 		levelArr=[block.getTagLevel() for block in blocks]
 		self.assertEqual(levelArr,[5,3])
-	
+
 	def test_merge(self):
 		block1=TextBlock("AA BB CC ",set([0]),3,3,3,1,0)
 		block2=TextBlock("DD EE FF GG HH II JJ .",set([1]),6,0,6,2,1)
@@ -416,5 +419,17 @@ class TestParser(unittest.TestCase):
 		self.assertEqual(block1.getLabels(),set([DefaultLabels.MIGHT_BE_CONTENT,DefaultLabels.ARTICLE_METADATA]))
 		self.assertEqual(block1.getOffsetBlocksStart(),0)
 		self.assertEqual(block1.getOffsetBlocksEnd(),1)
+
+
+	def test_getDocFromUrl(self):
+		"""getDocFromUrl() should run (was dying because of undefined 'filename')"""
+		url = "http://www.example.com/"
+		fake_readFromUrl = mock.Mock(return_value=u"<html><body><h1>Example</h1></body></html>")
+		tmp_filter = MarkEverythingContentFilter()
+
+		with mock.patch.object(self.extractor, "readFromUrl", fake_readFromUrl):
+			with mock.patch.object(self.extractor, "filter", tmp_filter):
+				self.assertIsInstance(self.extractor.getDocFromUrl(url), TextDocument)
+
 
 runTests()
