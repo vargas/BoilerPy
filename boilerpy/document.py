@@ -17,7 +17,8 @@
 #  * limitations under the License.
 #  
 # package: de.l3s.boilerpipe.document
-import copy,sys
+import copy
+import sys
 
 # 
 #  * Some pre-defined labels which can be used in conjunction with
@@ -150,8 +151,8 @@ class TextBlock(object):
 		if self.numWordsInWrappedLines == 0:
 			self.numWordsInWrappedLines = self.numWords
 			self.numWrappedLines = 1
-		self.textDensity = self.numWordsInWrappedLines / float(self.numWrappedLines)
-		self.linkDensity = 0 if self.numWords==0 else self.numWordsInAnchorText / float(self.numWords)
+		self.textDensity = self.numWordsInWrappedLines / self.numWrappedLines
+		self.linkDensity = 0 if self.numWords == 0 else self.numWordsInAnchorText / self.numWords
 		
 	def isContent(self):
 		""" generated source for method isContent """
@@ -294,7 +295,7 @@ class TextBlock(object):
 		self.tagLevel = tagLevel
 
 TextBlock.EMPTY_START = TextBlock("", set(), 0, 0, 0, 0, -1)
-TextBlock.EMPTY_END = TextBlock("", set(), 0, 0, 0, 0, sys.maxint)
+TextBlock.EMPTY_END = TextBlock("", set(), 0, 0, 0, 0, sys.maxsize)
 
 
 
@@ -325,7 +326,7 @@ class TextDocumentStatistics(object):
 	#	  
 	def avgNumWords(self):
 		""" generated source for method avgNumWords """
-		return self.numWords / float(self.numBlocks)
+		return self.numWords / self.numBlocks
 
 	# 
 	#	  * Returns the overall number of words in all blocks.

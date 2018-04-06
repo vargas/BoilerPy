@@ -1,7 +1,6 @@
 import unittest
 import sys
-
-import mock
+from unittest import mock
 
 from boilerpy.document import TextDocument,TextBlock
 from boilerpy.filters import *
@@ -33,12 +32,12 @@ class TestFilters(unittest.TestCase):
 				numWords=text.count(' ')
 			try:
 				numAnchorWords=numAnchorWordsArr[idx]
-			except TypeError,IndexError:
+			except (TypeError, IndexError):
 				numAnchorWords=0
 			block=TextBlock(text,set(),numWords,numAnchorWords,0,0,idx)
 			try:
 				block.setIsContent(isContentArr[idx])
-			except TypeError,IndexError:
+			except (TypeError, IndexError):
 				pass
 			try:
 				label=labelArr[idx]
@@ -46,7 +45,7 @@ class TestFilters(unittest.TestCase):
 				elif type(label)==list:
 					for l in label: block.addLabel(l)
 				else: block.addLabel(label)
-			except TypeError,IndexError:
+			except (TypeError, IndexError):
 				pass
 
 			textBlocks.append(block)
@@ -414,7 +413,7 @@ class TestParser(unittest.TestCase):
 		self.assertEqual(block1.getText(),"AA BB CC \nDD EE FF GG HH II JJ .")
 		self.assertEqual(block1.getNumWords(),9)
 		self.assertEqual(block1.getNumWordsInAnchorText(),3)
-		self.assertAlmostEqual(block1.getLinkDensity(),1.0/3.0)
+		self.assertAlmostEqual(block1.getLinkDensity(), 1.0 / 3.0)
 		self.assertEqual(block1.getTextDensity(),3)
 		self.assertEqual(block1.getLabels(),set([DefaultLabels.MIGHT_BE_CONTENT,DefaultLabels.ARTICLE_METADATA]))
 		self.assertEqual(block1.getOffsetBlocksStart(),0)
