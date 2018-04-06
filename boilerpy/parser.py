@@ -17,10 +17,10 @@
 #  * limitations under the License.
 #  
 
-from HTMLParser import HTMLParser
+from html.parser import HTMLParser
 from xml.sax import ContentHandler
 from . import document
-from document import DefaultLabels
+from .document import DefaultLabels
 import re
 
 
@@ -146,7 +146,7 @@ class FontTagAction(TagAction):
 		sizeAttr = attrs.getValue("size")
 		size=None
 		if sizeAttr != None:
-			match=PAT_FONT_SIZE.match(sizeAttr)
+			match = self.PAT_FONT_SIZE.match(sizeAttr)
 			if match!=None:
 				rel=match.group(0)
 				val=match.group(1)
@@ -293,13 +293,13 @@ class MarkupTagAction(TagAction):
 	def getAncestorLabels(self):
 		""" generated source for method getAncestorLabels """
 		labelSet = set()
-		for labels in labelStack:
+		for labels in self.labelStack:
 			if labels == None:continue 
 			labelSet.update(labels)
 		return labelSet
 
 
-class CommonTagActions:
+class CommonTagActions(object):
 	TA_IGNORABLE_ELEMENT=IgnorableElementTagAction()
 	TA_ANCHOR_TEXT=AnchorTextTagAction()
 	TA_BODY=BodyTagAction()
@@ -374,7 +374,7 @@ class ConditionalLabelAction(LabelAction):
 		if self.condition(textBlock): self.addLabelsTo(textBlock)
 
 
-class SpecialTokens:
+class SpecialTokens(object):
 	ANCHOR_TEXT_START = u'\ue00astart'
 	ANCHOR_TEXT_END = u'\ue00aend'
 
@@ -397,9 +397,8 @@ class BoilerpipeBaseParser(object):
 	EVENT_CHARACTERS=2
 	EVENT_WHITESPACE=3
 	#all word characters except underscore -- i.e. not (not word or underscore)
-	PAT_VALID_WORD_CHARACTER = re.compile(r"[^\W_]",re.UNICODE)
-#	PAT_WORD = re.compile(r"\ue00a?[\w]+",re.UNICODE)
-	PAT_WORD = re.compile(ur"\ue00a?[\w\"'\.,\!\@\-\:\;\$\?\(\)/]+",re.UNICODE)
+	PAT_VALID_WORD_CHARACTER = re.compile(r"[^\W_]", re.UNICODE)
+	PAT_WORD = re.compile(r"\ue00a?[\w\"'\.,\!\@\-\:\;\$\?\(\)/]+", re.UNICODE)
 	
 	""" generated source for class BoilerpipeHTMLContentHandler """
 	# 
