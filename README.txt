@@ -20,19 +20,19 @@ Installation
 
 BoilerPy was packaged with distutils.  In can be installed from the command-line with the following line:
 
-	``>python setup.py install``
+    ``>python setup.py install``
 
 Usage
 ---------------------------------------
 
-	``import boilerpy``
+    ``import boilerpy``
 
-	``boilerpy.extractors.ARTICLE_EXTRACTOR.getContentFromUrl('http://www.example.com/')``
+    ``boilerpy.extractors.ARTICLE_EXTRACTOR.getContentFromUrl('http://www.example.com/')``
 
-	``boilerpy.extractors.ARTICLE_EXTRACTOR.getContentFromFile('site/example.html')``
+    ``boilerpy.extractors.ARTICLE_EXTRACTOR.getContentFromFile('site/example.html')``
 
-	``htmlText='<html><body><h1>Example</h1></body></html>'``
-	``boilerpy.extractors.ARTICLE_EXTRACTOR.getContent(htmlText)``
+    ``htmlText='<html><body><h1>Example</h1></body></html>'``
+    ``boilerpy.extractors.ARTICLE_EXTRACTOR.getContent(htmlText)``
 
 
 
